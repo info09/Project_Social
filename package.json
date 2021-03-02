@@ -1,0 +1,8 @@
+{
+  "name": "Project_Social",
+  "version": "1.0.0",
+  "description": "mini social network",
+  "main": "src/server.js",
+  "author": "HuyTQ",
+  "license": "MIT"
+}
