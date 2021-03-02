@@ -9,6 +9,8 @@
 
 ## Command
 
+### Lession 9
+
 - Open terminal command window: Ctrl + `
 - npm init or yarn init
 - git init
@@ -16,3 +18,7 @@
 - git config --global user.name "HuyTQ"
 - git config --global user.email "huytq3103@gmail.com"
 - git push -u origin main
+
+### Lession 10
+
+- tsc --init
