@@ -27,7 +27,11 @@ class App {
   }
 
   private connectToDatabase(){
-    const connectString = 'mongodb+srv://huytq_sa:ZNpmNKrUyUULFxVG@master.uwiff.mongodb.net/project_social?retryWrites=true&w=majority';
+    const connectString = process.env.MONGODB_URI;
+    if(!connectString){
+      console.log('ConnectString is invalid');
+      return;
+    }
     try {
       mongoose.connect(connectString, {
         useNewUrlParser: true,
