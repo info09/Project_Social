@@ -13,6 +13,8 @@
     "@types/hpp": "^0.2.1",
     "@types/morgan": "^1.9.2",
     "bcryptjs": "^2.4.3",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "envalid": "^7.0.0",
