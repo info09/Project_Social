@@ -15,7 +15,7 @@ class UserService {
       throw new HttpException(400, "Model is empty");
     }
 
-    const user = this.userSchema.findOne({ email: model.email });
+    const user = await this.userSchema.findOne({ email: model.email });
     if (user) {
       throw new HttpException(409, `Email ${model.email} đã tồn tại`);
     }
@@ -27,7 +27,7 @@ class UserService {
     });
 
     const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = bcryptjs.hash(model.password!, salt);
+    const hashedPassword = await bcryptjs.hash(model.password!, salt);
     const createdUser: IUser = await this.userSchema.create({
       ...model,
       password: hashedPassword,
