@@ -144,6 +144,12 @@ class UserService {
     // return users;
   }
 
+  public async deleteUser(userId: string): Promise<IUser> {
+    const deletedUser = await this.userSchema.findByIdAndDelete(userId).exec();
+    if (!deletedUser) throw new HttpException(409, "Your id is invalid");
+    return deletedUser;
+  }
+
   private createToken(user: IUser): TokenData {
     const dataInToken: DataStoreInToken = { id: user._id };
     const secret: string = process.env.JWT_TOKEN!;
