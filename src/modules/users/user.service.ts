@@ -7,6 +7,7 @@ import gravatar from "gravatar";
 import bcryptjs from "bcryptjs";
 import IUser from "./user.interface";
 import jwt from "jsonwebtoken";
+import { IPagination } from "@core/interfaces";
 class UserService {
   public userSchema = UserSchema;
 
@@ -93,6 +94,54 @@ class UserService {
     }
 
     return user;
+  }
+
+  public async getAll(): Promise<IUser[]> {
+    const users = await this.userSchema.find().exec();
+    return users;
+  }
+
+  public async getAllPaging(
+    keyword: string,
+    page: number
+  ): Promise<IPagination<IUser>> {
+    const pageSize: number = Number(process.env.PAGE_SIZE || 10);
+    let query = {};
+
+    if (keyword) {
+      query = {
+        $or: [
+          { email: keyword },
+          { first_name: keyword },
+          { last_name: keyword },
+        ],
+      };
+    }
+
+    const users = await this.userSchema
+      .find(query)
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .exec();
+
+    const totalCount = await this.userSchema
+      .find(query)
+      .estimatedDocumentCount()
+      .exec();
+
+    return {
+      total: totalCount,
+      page: page,
+      pageSize: pageSize,
+      items: users,
+    } as IPagination<IUser>;
+
+    // const users = await this.userSchema
+    //   .find()
+    //   .skip((page - 1) * pageSize)
+    //   .limit(pageSize)
+    //   .exec();
+    // return users;
   }
 
   private createToken(user: IUser): TokenData {

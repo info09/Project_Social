@@ -23,6 +23,13 @@ export default class UsersRoute implements Route {
 
     this.router.get(this.path + "/:id", this.userController.getUserById);
 
+    this.router.get(this.path, this.userController.getAll);
+
+    this.router.get(
+      this.path + "/paging/:page",
+      this.userController.getAllPaging
+    );
+
     this.router.put(
       this.path + "/:id",
       validationMiddleware(RegisterDto, true),

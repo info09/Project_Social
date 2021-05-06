@@ -1,3 +1,4 @@
-import Route from './route.interface';
+import IPagination from "./pagination.interface";
+import Route from "./route.interface";
 
-export { Route };
+export { Route, IPagination };
