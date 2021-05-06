@@ -51,13 +51,21 @@ class UserService {
     let avatar = user.avatar;
     if (user.email === model.email) {
       throw new HttpException(400, "You must using the different email");
-    } else {
-      avatar = gravatar.url(model.email!, {
-        size: "200",
-        rating: "g",
-        default: "mm",
-      });
     }
+
+    const checkEmail = await this.userSchema
+      .findOne({ email: { $eq: model.email } })
+      .exec();
+
+    if (checkEmail) {
+      throw new HttpException(400, "Email is use already");
+    }
+
+    avatar = gravatar.url(model.email!, {
+      size: "200",
+      rating: "g",
+      default: "mm",
+    });
 
     let updateUser;
 
@@ -65,18 +73,26 @@ class UserService {
       const salt = await bcryptjs.genSalt(10);
       const hashedPassword = await bcryptjs.hash(model.password!, salt);
       updateUser = await this.userSchema
-        .findByIdAndUpdate(userId, {
-          ...model,
-          password: hashedPassword,
-          avatar: avatar,
-        })
+        .findByIdAndUpdate(
+          userId,
+          {
+            ...model,
+            password: hashedPassword,
+            avatar: avatar,
+          },
+          { new: true }
+        )
         .exec();
     } else {
       updateUser = await this.userSchema
-        .findByIdAndUpdate(userId, {
-          ...model,
-          avatar: avatar,
-        })
+        .findByIdAndUpdate(
+          userId,
+          {
+            ...model,
+            avatar: avatar,
+          },
+          { new: true }
+        )
         .exec();
     }
 
