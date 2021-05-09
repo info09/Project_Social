@@ -2,7 +2,9 @@ import { HttpException } from "@core/exceptions";
 import { IUser, UserSchema } from "@modules/users";
 import normalizeUrl from "normalize-url";
 import { IProfile, ISocial, ProfileSchema } from ".";
+import AddExperienceDto from "./dtos/add_experience.dto";
 import CreateProfileDto from "./dtos/create_profile.dto";
+import { IExperience } from "./profile.interface";
 
 class ProfileService {
   public async getCurrentProfile(userId: string): Promise<Partial<IUser>> {
@@ -86,6 +88,37 @@ class ProfileService {
 
     return profile;
   }
+
+  public addExperience = async (
+    userId: string,
+    experience: AddExperienceDto
+  ) => {
+    const newExp = {
+      ...experience,
+    };
+
+    const profile = await ProfileSchema.findOne({ user: userId }).exec();
+    if (!profile) {
+      throw new HttpException(400, "No profile this user");
+    }
+
+    profile.experience.unshift(newExp as IExperience);
+    await profile.save();
+    return profile;
+  };
+
+  public deleteExperience = async (userId: string, experienceId: string) => {
+    const profile = await ProfileSchema.findOne({ user: userId }).exec();
+    if (!profile) {
+      throw new HttpException(400, "No profile this user");
+    }
+
+    profile.experience = profile.experience.filter(
+      (exp) => exp._id.toString() !== experienceId
+    );
+    await profile.save();
+    return profile;
+  };
 }
 
 export default ProfileService;
