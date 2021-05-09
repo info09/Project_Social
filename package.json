@@ -25,6 +25,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.18",
     "morgan": "^1.10.0",
+    "normalize-url": "^6.0.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {

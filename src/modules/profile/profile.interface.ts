@@ -35,7 +35,7 @@ export interface IEducation {
   description: string;
 }
 
-export interface ISocial {
+export interface ISocial extends Record<string, string> {
   youtube: string;
   facebook: string;
   twitter: string;
