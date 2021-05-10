@@ -5,6 +5,7 @@ import App from "./app";
 import UsersRoute from "@modules/users/user.route";
 import AuthRoute from "@modules/auth/auth.route";
 import { ProfileRoute } from "@modules/profile";
+import { PostRoute } from "@modules/post";
 
 validateEnv();
 const routes = [
@@ -12,6 +13,7 @@ const routes = [
   new UsersRoute(),
   new AuthRoute(),
   new ProfileRoute(),
+  new PostRoute(),
 ];
 
 const app = new App(routes);
