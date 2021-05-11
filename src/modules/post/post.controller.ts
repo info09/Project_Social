@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import CreateCommentDto from "./dto/create_comment.dto";
 import CreatePostDto from "./dto/create_post.dto";
 import PostService from "./post.service";
 
@@ -115,6 +116,47 @@ export default class PostController {
       const userId: string = req.user.id;
       const postId: string = req.params.id;
       const result = await this.postService.unLikePost(userId, postId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public addComment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const postId: string = req.params.id;
+      const userId: string = req.user.id;
+
+      const result = await this.postService.addComment({
+        text: req.body.text,
+        userId: userId,
+        postId: postId,
+      });
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public removeComment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId: string = req.user.id;
+      const postId: string = req.params.id;
+      const commentId: string = req.params.comment_id;
+
+      const result = await this.postService.removeComment(
+        userId,
+        postId,
+        commentId
+      );
       res.status(200).json(result);
     } catch (error) {
       next(error);
