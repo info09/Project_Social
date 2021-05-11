@@ -3,7 +3,7 @@ import { IPagination } from "@core/interfaces";
 import { UserSchema } from "@modules/users";
 import { PostSchema } from ".";
 import CreatePostDto from "./dto/create_post.dto";
-import { IPost } from "./post.interface";
+import { ILike, IPost } from "./post.interface";
 
 export default class PostService {
   public async createPost(
@@ -95,5 +95,35 @@ export default class PostService {
 
     await post.remove();
     return post;
+  }
+
+  public async likePost(userId: string, postId: string): Promise<ILike[]> {
+    const post = await PostSchema.findById(postId).exec();
+    if (!post) {
+      throw new HttpException(400, "Post not found");
+    }
+
+    if (post.likes.some((i: ILike) => i.user.toString() === userId)) {
+      throw new HttpException(400, "Post already liked");
+    }
+
+    post.likes.unshift({ user: userId });
+    await post.save();
+    return post.likes;
+  }
+
+  public async unLikePost(userId: string, postId: string): Promise<ILike[]> {
+    const post = await PostSchema.findById(postId).exec();
+    if (!post) {
+      throw new HttpException(400, "Post not found");
+    }
+
+    if (!post.likes.some((i: ILike) => i.user.toString() === userId)) {
+      throw new HttpException(400, "Post has not yet been liked");
+    }
+
+    post.likes = post.likes.filter(({ user }) => user.toString() !== userId);
+    await post.save();
+    return post.likes;
   }
 }
