@@ -34,4 +34,49 @@ export default class PostController {
       next(error);
     }
   };
+
+  public getAllPost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const result = await this.postService.getAllPost();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getPostById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const postId: string = req.params.id;
+      const result = await this.postService.getPostById(postId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getPostPaging = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const page: number = Number(req.params.page);
+      const keyword = req.query.keyword || "";
+      const result = await this.postService.getPostPaging(
+        keyword.toString(),
+        page
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
