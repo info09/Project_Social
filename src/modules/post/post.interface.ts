@@ -6,6 +6,7 @@ export interface IPost {
   avatar: string;
   likes: ILike[];
   comments: IComment[];
+  shares: IShare[];
   date: Date;
 }
 
@@ -20,4 +21,8 @@ export interface IComment {
   name: string;
   avatar: string;
   date: Date;
+}
+
+export interface IShare {
+  user: string;
 }

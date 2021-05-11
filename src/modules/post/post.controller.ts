@@ -162,4 +162,35 @@ export default class PostController {
       next(error);
     }
   };
+
+  public sharePost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId: string = req.user.id;
+      const postId: string = req.params.id;
+
+      const result = await this.postService.sharePost(userId, postId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public deleteSharePost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId: string = req.user.id;
+      const postId: string = req.params.id;
+      const result = await this.postService.deleteSharePost(userId, postId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -69,5 +69,17 @@ export default class PostRoute implements Route {
       authMiddleware,
       this.postController.removeComment
     );
+
+    this.router.post(
+      `${this.path}/share/:id`,
+      authMiddleware,
+      this.postController.sharePost
+    );
+
+    this.router.delete(
+      `${this.path}/share/:id`,
+      authMiddleware,
+      this.postController.deleteSharePost
+    );
   }
 }
