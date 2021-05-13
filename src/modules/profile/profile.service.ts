@@ -5,7 +5,7 @@ import { IProfile, ISocial, ProfileSchema } from ".";
 import AddEducationDto from "./dtos/add_education.dto";
 import AddExperienceDto from "./dtos/add_experience.dto";
 import CreateProfileDto from "./dtos/create_profile.dto";
-import { IEducation, IExperience } from "./profile.interface";
+import { IEducation, IExperience, IFollow } from "./profile.interface";
 
 class ProfileService {
   public async getCurrentProfile(userId: string): Promise<Partial<IUser>> {
@@ -147,6 +147,113 @@ class ProfileService {
     );
     await profile.save();
     return profile;
+  };
+
+  public follow = async (formUserId: string, toUserId: string) => {
+    const fromProfile = await ProfileSchema.findOne({
+      user: formUserId,
+    }).exec();
+    if (!fromProfile) {
+      throw new HttpException(400, "From User not found");
+    }
+
+    const toProfile = await ProfileSchema.findOne({ user: toUserId }).exec();
+    if (!toProfile) {
+      throw new HttpException(400, "To user not found");
+    }
+
+    if (
+      toProfile.followers &&
+      toProfile.followers.some(
+        (follower: IFollow) => follower.user.toString() === formUserId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        `User ${formUserId} đã theo dõi user ${toUserId}`
+      );
+    }
+
+    if (
+      fromProfile.followings &&
+      fromProfile.followings.some(
+        (follow: IFollow) => follow.user.toString() === toUserId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        `User ${toUserId} đã được theo dõi bởi user ${formUserId}`
+      );
+    }
+
+    if (!fromProfile.followings) {
+      fromProfile.followings = [];
+    }
+    fromProfile.followings.unshift({ user: toUserId });
+
+    if (!toProfile.followers) {
+      toProfile.followers = [];
+    }
+    toProfile.followers.unshift({ user: formUserId });
+
+    await fromProfile.save();
+    await toProfile.save();
+
+    return fromProfile;
+  };
+
+  public unFollow = async (fromUserId: string, toUserId: string) => {
+    const fromProfile = await ProfileSchema.findOne({
+      user: fromUserId,
+    }).exec();
+    if (!fromProfile) {
+      throw new HttpException(400, `From User not found`);
+    }
+
+    const toProfile = await ProfileSchema.findOne({ user: toUserId }).exec();
+    if (!toProfile) {
+      throw new HttpException(400, "To User not found");
+    }
+
+    if (
+      fromProfile.followings &&
+      fromProfile.followings.some(
+        (follow: IFollow) => follow.user.toString() !== toUserId
+      )
+    ) {
+      throw new HttpException(400, `Bạn chưa follow user ${toUserId}`);
+    }
+
+    if (
+      toProfile.followers &&
+      toProfile.followers.some(
+        (follow: IFollow) => follow.user.toString() !== fromUserId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        `Bạn chưa được theo dõi từ User ${fromUserId}`
+      );
+    }
+
+    if (!fromProfile.followings) {
+      fromProfile.followings = [];
+    }
+    fromProfile.followings = fromProfile.followings.filter(
+      ({ user }) => user.toString() !== toUserId
+    );
+
+    if (!toProfile.followers) {
+      toProfile.followers = [];
+    }
+    toProfile.followers = toProfile.followers.filter(
+      ({ user }) => user.toString() !== fromUserId
+    );
+
+    await fromProfile.save();
+    await toProfile.save();
+
+    return fromProfile;
   };
 }
 

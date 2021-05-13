@@ -66,5 +66,17 @@ export default class ProfileRoute implements Route {
       authMiddleware,
       this.profileController.deleteEducation
     );
+
+    this.router.post(
+      `${this.path}/follow/:id`,
+      authMiddleware,
+      this.profileController.follow
+    );
+
+    this.router.delete(
+      `${this.path}/unfollow/:id`,
+      authMiddleware,
+      this.profileController.unFollow
+    );
   }
 }

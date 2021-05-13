@@ -15,9 +15,8 @@ class ProfileController {
   ) => {
     try {
       const userId = req.user.id;
-      const resultObj: Partial<IUser> = await this.profileService.getCurrentProfile(
-        userId
-      );
+      const resultObj: Partial<IUser> =
+        await this.profileService.getCurrentProfile(userId);
       res.status(200).json(resultObj);
     } catch (error) {
       next(error);
@@ -31,9 +30,8 @@ class ProfileController {
   ) => {
     try {
       const userId = req.params.id;
-      const profile: Partial<IUser> = await this.profileService.getCurrentProfile(
-        userId
-      );
+      const profile: Partial<IUser> =
+        await this.profileService.getCurrentProfile(userId);
       res.status(200).json(profile);
     } catch (error) {
       next(error);
@@ -46,7 +44,8 @@ class ProfileController {
     next: NextFunction
   ) => {
     try {
-      const profile: Partial<IUser>[] = await this.profileService.getAllProfile();
+      const profile: Partial<IUser>[] =
+        await this.profileService.getAllProfile();
       res.status(200).json(profile);
     } catch (error) {
       next(error);
@@ -143,6 +142,29 @@ class ProfileController {
         eduId
       );
       res.status(200).json(profile);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public follow = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const fromUserId: string = req.user.id;
+      const toUserId: string = req.params.id;
+
+      const result = await this.profileService.follow(fromUserId, toUserId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public unFollow = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const fromUserId: string = req.user.id;
+      const toUserId: string = req.params.id;
+      const result = await this.profileService.unFollow(fromUserId, toUserId);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
