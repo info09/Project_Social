@@ -5,7 +5,7 @@ import { IProfile, ISocial, ProfileSchema } from ".";
 import AddEducationDto from "./dtos/add_education.dto";
 import AddExperienceDto from "./dtos/add_experience.dto";
 import CreateProfileDto from "./dtos/create_profile.dto";
-import { IEducation, IExperience, IFollow } from "./profile.interface";
+import { IEducation, IExperience, IFollow, IFriend } from "./profile.interface";
 
 class ProfileService {
   public async getCurrentProfile(userId: string): Promise<Partial<IUser>> {
@@ -254,6 +254,169 @@ class ProfileService {
     await toProfile.save();
 
     return fromProfile;
+  };
+
+  public addFriend = async (fromUserId: string, toUserId: string) => {
+    const fromProfile = await ProfileSchema.findOne({
+      user: fromUserId,
+    }).exec();
+    if (!fromProfile) {
+      throw new HttpException(400, "From user not found");
+    }
+
+    const toProfile = await ProfileSchema.findOne({ user: toUserId }).exec();
+    if (!toProfile) {
+      throw new HttpException(400, "To user not found");
+    }
+
+    if (
+      toProfile.friends &&
+      toProfile.friends.some((fr: IFriend) => fr.user.toString() === fromUserId)
+    ) {
+      throw new HttpException(
+        400,
+        `User ${fromUserId} đã là bạn bè với user ${toUserId}}`
+      );
+    }
+
+    if (
+      fromProfile.request_friends &&
+      fromProfile.request_friends.some(
+        (fr: IFriend) => fr.user.toString() === toUserId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        `User ${fromUserId} đã gửi request tới User ${toUserId}`
+      );
+    }
+
+    if (!toProfile.request_friends) {
+      toProfile.request_friends = [];
+    }
+
+    toProfile.request_friends.unshift({ user: fromUserId } as IFriend);
+    await toProfile.save();
+    return toProfile;
+  };
+
+  public unFriend = async (fromUserId: string, toUserId: string) => {
+    const fromProfile = await ProfileSchema.findOne({
+      user: fromUserId,
+    }).exec();
+    if (!fromProfile) {
+      throw new HttpException(400, "From user not found");
+    }
+
+    const toProfile = await ProfileSchema.findOne({ user: toUserId }).exec();
+    if (!toProfile) {
+      throw new HttpException(400, "To user not found");
+    }
+
+    if (
+      toProfile.friends &&
+      toProfile.friends.some((fr: IFriend) => fr.user.toString() !== fromUserId)
+    ) {
+      throw new HttpException(400, "2 user chưa kết bạn với nhau");
+    }
+
+    if (
+      fromProfile.friends &&
+      fromProfile.friends.some((fr: IFriend) => fr.user.toString() !== toUserId)
+    ) {
+      throw new HttpException(400, "2 user chưa kết bạn với nhau");
+    }
+
+    if (!fromProfile.friends) fromProfile.friends = [];
+    fromProfile.friends = fromProfile.friends.filter(
+      ({ user }) => user.toString() !== toUserId
+    );
+
+    if (!toProfile.friends) toProfile.friends = [];
+    toProfile.friends = toProfile.friends.filter(
+      ({ user }) => user.toString() !== fromUserId
+    );
+
+    await fromProfile.save();
+    await toProfile.save();
+
+    return fromProfile;
+  };
+
+  public acceptFriend = async (
+    currentUserId: string,
+    requestUserId: string
+  ) => {
+    const currentProfile = await ProfileSchema.findOne({
+      user: currentUserId,
+    }).exec();
+    if (!currentProfile) {
+      throw new HttpException(400, "From user not found");
+    }
+
+    const requestProfile = await ProfileSchema.findOne({
+      user: requestUserId,
+    }).exec();
+    if (!requestProfile) {
+      throw new HttpException(400, "To user not found");
+    }
+
+    if (
+      currentProfile.friends &&
+      currentProfile.friends.some(
+        (fr: IFriend) => fr.user.toString() === requestUserId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        `User ${currentUserId} đã là bạn bè với user ${requestUserId}`
+      );
+    }
+
+    if (
+      requestProfile.friends &&
+      requestProfile.friends.some(
+        (fr: IFriend) => fr.user.toString() === currentUserId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        `User ${requestUserId} đã là bạn bè với user ${currentUserId}`
+      );
+    }
+
+    if (
+      currentProfile.request_friends &&
+      currentProfile.request_friends.some(
+        (fr: IFriend) => fr.user.toString() !== requestUserId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        `User ${currentUserId} chưa add friend user ${requestUserId}`
+      );
+    }
+
+    if (!currentProfile.request_friends) {
+      currentProfile.request_friends = [];
+    }
+    currentProfile.request_friends = currentProfile.request_friends.filter(
+      ({ user }) => user.toString() !== requestUserId
+    );
+
+    if (!currentProfile.friends) {
+      currentProfile.friends = [];
+    }
+    currentProfile.friends.unshift({ user: requestUserId } as IFriend);
+
+    if (!requestProfile.friends) {
+      requestProfile.friends = [];
+    }
+    requestProfile.friends.unshift({ user: currentUserId } as IFriend);
+
+    await currentProfile.save();
+    await requestProfile.save();
+    return currentProfile;
   };
 }
 

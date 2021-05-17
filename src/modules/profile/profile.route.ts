@@ -78,5 +78,23 @@ export default class ProfileRoute implements Route {
       authMiddleware,
       this.profileController.unFollow
     );
+
+    this.router.post(
+      `${this.path}/friends/:id`,
+      authMiddleware,
+      this.profileController.addFriend
+    );
+
+    this.router.delete(
+      `${this.path}/friends/:id`,
+      authMiddleware,
+      this.profileController.unFriend
+    );
+
+    this.router.patch(
+      `${this.path}/friends/:id`,
+      authMiddleware,
+      this.profileController.acceptFriend
+    );
   }
 }

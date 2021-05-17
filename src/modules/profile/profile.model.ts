@@ -114,6 +114,30 @@ const ProfileSchema = new mongoose.Schema({
       },
     },
   ],
+  friends: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
+  request_friends: [
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   date: {
     type: Date,
     default: Date.now,

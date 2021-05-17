@@ -12,11 +12,18 @@ export default interface IProfile {
   social: ISocial;
   followings: IFollow[];
   followers: IFollow[];
+  friends: IFriend[];
+  request_friends: IFriend[];
   date: Date;
 }
 
 export interface IFollow {
   user: string;
+}
+
+export interface IFriend {
+  user: string;
+  date: Date;
 }
 export interface IExperience {
   _id: string;
