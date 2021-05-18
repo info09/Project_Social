@@ -1,6 +1,13 @@
 import { HttpException } from "@core/exceptions";
-import { UserSchema } from "@modules/users";
-import { CreateGroupDto, GroupSchema, IGroup, IMember } from ".";
+import { IUser, UserSchema } from "@modules/users";
+import {
+  CreateGroupDto,
+  GroupSchema,
+  IGroup,
+  IManager,
+  IMember,
+  SetManagerDto,
+} from ".";
 
 class GroupService {
   public async createGroup(
@@ -152,6 +159,122 @@ class GroupService {
 
     await group.save();
     return group;
+  }
+
+  public async removeMemberGroup(userId: string, groupId: string) {
+    const group = await GroupSchema.findById(groupId).exec();
+    if (!group) {
+      throw new HttpException(400, "Group not found");
+    }
+
+    const user = await UserSchema.findById(userId).select("-password").exec();
+    if (!user) throw new HttpException(400, "User id is not exist");
+
+    if (
+      group.members &&
+      group.members.some((member: IMember) => member.user.toString() !== userId)
+    ) {
+      throw new HttpException(400, "User chưa phải là thành viên của group");
+    }
+
+    group.members = group.members.filter(
+      ({ user }) => user.toString() !== userId
+    );
+    await group.save();
+    return group;
+  }
+
+  public async addManager(
+    groupId: string,
+    request: SetManagerDto
+  ): Promise<IGroup> {
+    const group = await GroupSchema.findById(groupId).exec();
+    if (!group) throw new HttpException(400, "Group id is not exist");
+
+    const user = await UserSchema.findById(request.userId)
+      .select("-password")
+      .exec();
+    if (!user) throw new HttpException(400, "User id is not exist");
+
+    // if (
+    //   group.members &&
+    //   group.members.some(
+    //     (member: IMember) => member.user.toString() !== request.userId
+    //   )
+    // ) {
+    //   throw new HttpException(400, "User chưa phải làm member của group");
+    // }
+
+    if (
+      group.managers &&
+      group.managers.some(
+        (item: IManager) => item.user.toString() === request.userId
+      )
+    ) {
+      throw new HttpException(
+        400,
+        "You has already been set manger to this group"
+      );
+    }
+
+    group.managers.unshift({
+      user: request.userId,
+      role: request.role,
+    } as IManager);
+
+    await group.save();
+    return group;
+  }
+
+  public async removeManager(userId: string, groupId: string): Promise<IGroup> {
+    const group = await GroupSchema.findById(groupId).exec();
+    if (!group) {
+      throw new HttpException(400, "Group not found");
+    }
+
+    const user = await UserSchema.findById(userId).select("-password").exec();
+    if (!user) {
+      throw new HttpException(400, "User not found");
+    }
+
+    if (
+      group.members &&
+      group.members.some((member) => member.user.toString() !== userId)
+    ) {
+      throw new HttpException(400, "User not yet member in group");
+    }
+
+    if (
+      group.managers &&
+      group.managers.some(
+        (manager: IManager) => manager.user.toString() !== userId
+      )
+    ) {
+      throw new HttpException(400, "User not yet manager this group");
+    }
+
+    group.managers = group.managers.filter(
+      ({ user }) => user.toString() !== userId
+    );
+    await group.save();
+    return group;
+  }
+
+  public async getAllMember(groupId: string): Promise<IUser[]> {
+    const group = await GroupSchema.findById(groupId).exec();
+    if (!group) {
+      throw new HttpException(400, "Group not found");
+    }
+
+    const userIds = await group.members.map((member) => {
+      return member.user;
+    });
+
+    const users = await UserSchema.find({ _id: userIds })
+      .select("-password")
+      .exec();
+
+    return users;
   }
 }
 

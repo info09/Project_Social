@@ -42,5 +42,25 @@ export default class GroupRoute implements Route {
       `${this.path}/:userId/:groupId`,
       this.groupController.approvedJoinGroup
     );
+
+    this.router.get(
+      `${this.path}/member/:id`,
+      this.groupController.getAllMember
+    );
+
+    this.router.patch(
+      `${this.path}/member/:userId/:groupId`,
+      this.groupController.removeMember
+    );
+
+    this.router.post(
+      `${this.path}/manager/:id`,
+      this.groupController.addManager
+    );
+
+    this.router.patch(
+      `${this.path}/manager/:userId/:groupId`,
+      this.groupController.removeManager
+    );
   }
 }
