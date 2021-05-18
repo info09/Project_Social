@@ -1,6 +1,6 @@
 import { HttpException } from "@core/exceptions";
 import { UserSchema } from "@modules/users";
-import { CreateGroupDto, GroupSchema, IGroup } from ".";
+import { CreateGroupDto, GroupSchema, IGroup, IMember } from ".";
 
 class GroupService {
   public async createGroup(
@@ -87,6 +87,71 @@ class GroupService {
     if (!deletedGroup) throw new HttpException(400, "Update is not success");
 
     return deletedGroup;
+  }
+
+  public async joinGroup(userId: string, groupId: string) {
+    const group = await GroupSchema.findById(groupId).exec();
+    if (!group) {
+      throw new HttpException(400, "Group not found");
+    }
+
+    const user = await UserSchema.findById(userId).select("-password").exec();
+    if (!user) throw new HttpException(400, "User id is not exist");
+
+    if (
+      group.member_requests &&
+      group.member_requests.some(
+        (item: IMember) => item.user.toString() === userId
+      )
+    ) {
+      throw new HttpException(400, "User đã request join nhóm");
+    }
+
+    if (
+      group.members &&
+      group.members.some((item: IMember) => item.user === userId)
+    ) {
+      throw new HttpException(400, "User đã join nhóm");
+    }
+
+    group.member_requests.unshift({ user: userId } as IMember);
+    await group.save();
+    return group;
+  }
+
+  public async approvedJoinGroup(userId: string, groupId: string) {
+    const group = await GroupSchema.findById(groupId).exec();
+    if (!group) {
+      throw new HttpException(400, "Group not found");
+    }
+
+    const user = await UserSchema.findById(userId).select("-password").exec();
+    if (!user) throw new HttpException(400, "User id is not exist");
+
+    if (
+      group.members &&
+      group.members.some((item: IMember) => item.user === userId)
+    ) {
+      throw new HttpException(400, "User đã join nhóm");
+    }
+
+    if (
+      group.member_requests &&
+      group.member_requests.some(
+        (item: IMember) => item.user.toString() !== userId
+      )
+    ) {
+      throw new HttpException(400, "User chưa request join nhóm");
+    }
+
+    group.member_requests = group.member_requests.filter(
+      ({ user }) => user.toString() !== userId
+    );
+
+    group.members.unshift({ user: userId } as IMember);
+
+    await group.save();
+    return group;
   }
 }
 
