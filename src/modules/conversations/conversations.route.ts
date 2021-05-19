@@ -18,5 +18,11 @@ export default class ConversationRoute implements Route {
       validationMiddleware(SendMessageDto, true),
       this.conversationController.sendMessage
     );
+
+    this.router.get(
+      `${this.path}`,
+      authMiddleware,
+      this.conversationController.getMyConversation
+    );
   }
 }

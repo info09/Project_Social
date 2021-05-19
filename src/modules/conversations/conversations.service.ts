@@ -73,5 +73,20 @@ class ConversationService {
       return conversation;
     }
   }
+
+  public async getMyConversation(userId: string): Promise<IConversation[]> {
+    const user = await UserSchema.findById(userId).select("-password").exec();
+    if (!user) {
+      throw new HttpException(400, "User not found");
+    }
+
+    const conversation = await ConversationSchema.find({
+      $or: [{ user1: userId }, { user2: userId }],
+    })
+      .sort({ recent_date: -1 })
+      .exec();
+
+    return conversation;
+  }
 }
 export default ConversationService;

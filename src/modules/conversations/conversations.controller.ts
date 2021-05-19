@@ -18,6 +18,20 @@ class ConversationController {
       next(error);
     }
   };
+
+  public getMyConversation = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId: string = req.user.id;
+      const result = await this.conversationService.getMyConversation(userId);
+      res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default ConversationController;
